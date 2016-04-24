@@ -1,6 +1,8 @@
 extern crate miller_rabin;
+extern crate rand;
 
 use std::env;
+use rand::Rng;
 
 fn main() {
     let primes: Vec<u64> = vec![
@@ -1012,17 +1014,29 @@ fn main() {
             Ok(num) => num,
             Err(_) => {
                 println!("usage: cargo run <k>");
-                return;
+                return
             },
         },
         None => {
             println!("usage: cargo run <k>");
-            return;
+            return
         },
     };
 
 
-    let cnt = primes.into_iter().filter(|p| miller_rabin::probably_prime(*p, k)).count();
+    // primes should return true
+    let cnt = primes.iter().filter(|p| miller_rabin::probably_prime(**p, k)).count();
     assert_eq!(10000, cnt);
-    println!("Ok!")
+    println!("Primes Ok!");
+
+    // composites should return false
+    for _ in 0 .. 1000 {
+        let mut some_primes = primes.clone();
+        some_primes.truncate(1000);
+        let a: u64 = *rand::thread_rng().choose(&some_primes).unwrap();
+        let b: u64 = *rand::thread_rng().choose(&some_primes).unwrap();
+        let c: u64 = a * b;
+        assert_eq!(false, miller_rabin::probably_prime(c, k))
+    }
+    println!("Composites Ok!")
 }

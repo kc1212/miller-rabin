@@ -13,6 +13,10 @@ pub fn probably_prime(n: u64, k: u64) -> bool {
         return false
     }
 
+    if n % 2 == 0 {
+        return false
+    }
+
     let mut d = n - 1;
     let mut r = 0;
     while d % 2 == 0 {
@@ -52,6 +56,7 @@ fn powm_(b: u64, e: u64, m: u64, r: u64) -> u64 {
     }
 
     if e % 2 == 1 {
+        let b = b % m;
         return powm_(b * b % m, e / 2, m, r * b % m)
     }
 
