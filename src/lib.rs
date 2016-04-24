@@ -10,7 +10,7 @@ pub fn probably_prime(n: u64, k: u64) -> bool {
         if n == 2 || n == 3 {
             return true
         }
-        return false;
+        return false
     }
 
     let mut d = n - 1;
@@ -25,7 +25,7 @@ pub fn probably_prime(n: u64, k: u64) -> bool {
         let a = rand::thread_rng().gen_range::<u64>(2, n - 1);
         let mut x = powm(a, d, n);
         if x == 1 || x == n - 1 {
-            continue;
+            continue
         }
         for _ in 0 .. r - 1 {
             x = powm(x, 2, n);
@@ -33,7 +33,7 @@ pub fn probably_prime(n: u64, k: u64) -> bool {
                 return false
             }
             if x == n - 1 {
-                continue 'witness;
+                continue 'witness
             }
         }
         return false
@@ -48,11 +48,11 @@ pub fn powm(b: u64, e: u64, m: u64) -> u64 {
 
 fn powm_(b: u64, e: u64, m: u64, r: u64) -> u64 {
     if e == 0 {
-        return r;
+        return r
     }
 
     if e % 2 == 1 {
-        return powm_(b * b % m, e / 2, m, r * b % m);
+        return powm_(b * b % m, e / 2, m, r * b % m)
     }
 
     powm_(b * b % m, e / 2, m, r)
