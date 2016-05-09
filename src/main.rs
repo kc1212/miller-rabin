@@ -1,8 +1,10 @@
 extern crate miller_rabin;
 extern crate rand;
+extern crate num_traits;
 
 use std::env;
 use rand::Rng;
+use num_traits::FromPrimitive;
 
 fn main() {
     let primes: Vec<u64> = vec![
@@ -1025,18 +1027,17 @@ fn main() {
 
 
     // primes should return true
-    let cnt = primes.iter().filter(|p| miller_rabin::probably_prime(**p, k)).count();
+    let cnt = primes.iter()
+        .filter(|p| miller_rabin::probably_prime(&FromPrimitive::from_u64(**p).unwrap(), k))
+        .count();
     assert_eq!(10000, cnt);
     println!("Primes Ok!");
 
     // composites should return false
     for _ in 0 .. 1000 {
-        let mut some_primes = primes.clone();
-        some_primes.truncate(1000);
-        let a: u64 = *rand::thread_rng().choose(&some_primes).unwrap();
-        let b: u64 = *rand::thread_rng().choose(&some_primes).unwrap();
-        let c: u64 = a * b;
-        assert_eq!(false, miller_rabin::probably_prime(c, k))
+        let a: u64 = *rand::thread_rng().choose(&primes).unwrap();
+        let b: u64 = *rand::thread_rng().choose(&primes).unwrap();
+        assert_eq!(false, miller_rabin::probably_prime(&FromPrimitive::from_u64(a * b).unwrap(), k))
     }
     println!("Composites Ok!")
 }

@@ -3,4 +3,7 @@ name = "miller_rabin"
 version = "0.1.0"
 
 [dependencies]
-rand = "0.3"
+rand = ">= 0.3"
+num-bigint = ">= 0.1"
+num-traits = ">= 0.1"
+num-integer = ">= 0.1"

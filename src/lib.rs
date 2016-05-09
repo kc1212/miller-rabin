@@ -2,41 +2,51 @@
 #![crate_name = "miller_rabin"]
 
 extern crate rand;
-use rand::Rng;
+extern crate num_bigint;
+extern crate num_traits;
+extern crate num_integer;
+
+use num_bigint::{BigUint, ToBigUint, RandBigInt};
+use num_traits::{Zero, One};
+use num_integer::Integer;
 
 // https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test#Algorithm_and_running_time
-pub fn probably_prime(n: u64, k: u64) -> bool {
-    if n <= 3 {
-        if n == 2 || n == 3 {
+pub fn probably_prime(n: &BigUint, k: u64) -> bool {
+    let f1: BigUint = One::one();
+    let f2: BigUint = 2.to_biguint().unwrap();
+    let f3: BigUint = 3.to_biguint().unwrap();
+
+    if n <= &f3 {
+        if n == &f2 || n == &f3 {
             return true
         }
         return false
     }
 
-    if n % 2 == 0 {
+    if n.is_even() {
         return false
     }
 
-    let mut d = n - 1;
-    let mut r = 0;
-    while d % 2 == 0 {
-        d >>= 1;
+    let mut d = n - &f1;
+    let mut r: u64 = 0;
+    while d.is_even() {
+        d = d >> 1;
         r += 1;
     }
-    assert_eq!(n - 1, 2u64.pow(r) * d);
+    // assert_eq!(n - 1, 2u64.pow(r) * d);
 
     'witness: for _ in 0 .. k {
-        let a = rand::thread_rng().gen_range::<u64>(2, n - 1);
-        let mut x = powm(a, d, n);
-        if x == 1 || x == n - 1 {
+        let a = rand::thread_rng().gen_biguint_range(&f2, &(n - &f1));
+        let mut x = mod_exp(&a, &d, n);
+        if x == f1 || x == n - &f1 {
             continue
         }
         for _ in 0 .. r - 1 {
-            x = powm(x, 2, n);
-            if x == 1 {
+            x = mod_exp(&x, &f2, n);
+            if x == f1 {
                 return false
             }
-            if x == n - 1 {
+            if x == n - &f1 {
                 continue 'witness
             }
         }
@@ -45,20 +55,21 @@ pub fn probably_prime(n: u64, k: u64) -> bool {
     true
 }
 
-// https://rosettacode.org/wiki/Modular_exponentiation#Haskell
-pub fn powm(b: u64, e: u64, m: u64) -> u64 {
-    powm_(b, e, m, 1)
-}
+// squared and multiply
+pub fn mod_exp(b: &BigUint, e: &BigUint, m: &BigUint) -> BigUint {
+    let (f1, f2): (BigUint, BigUint) = (One::one(), 2.to_biguint().unwrap());
+    let mut res = f1.clone();
+    let mut b_mut = b.clone();
+    let mut e_mut = e.clone();
 
-fn powm_(b: u64, e: u64, m: u64, r: u64) -> u64 {
-    if e == 0 {
-        return r
+    while !e_mut.is_zero() {
+        if e_mut.is_odd() {
+            res = (res * &b_mut).mod_floor(m);
+            e_mut = e_mut - &f1;
+        }
+        b_mut = (&b_mut * &b_mut).mod_floor(m);
+        e_mut = e_mut / &f2;
     }
 
-    if e % 2 == 1 {
-        let b = b % m;
-        return powm_(b * b % m, e / 2, m, r * b % m)
-    }
-
-    powm_(b * b % m, e / 2, m, r)
+    res
 }
